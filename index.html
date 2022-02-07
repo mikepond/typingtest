@@ -17,26 +17,167 @@
           static targets = ["wordBox", "input", "timeRemaining"];
 
           initialize() {
-            console.log("initializing");
-            this.words = [
-              "thing",
-              "last",
-              "family",
-              "star",
-              "science",
-              "speech",
-              "busy",
-              "year",
-              "string",
+            this.commonWords = [
+              "the",
+              "of",
+              "and",
+              "a",
+              "to",
+              "in",
+              "is",
+              "you",
+              "that",
+              "it",
+              "he",
+              "was",
+              "for",
+              "on",
+              "are",
+              "as",
+              "with",
+              "his",
+              "they",
+              "I",
+              "at",
+              "be",
+              "this",
+              "have",
+              "from",
+              "or",
+              "one",
+              "had",
+              "by",
+              "word",
+              "but",
+              "not",
+              "what",
+              "all",
+              "were",
+              "we",
+              "when",
+              "your",
+              "can",
+              "said",
+              "there",
+              "use",
+              "an",
+              "each",
+              "which",
+              "she",
+              "do",
+              "how",
+              "their",
+              "if",
+              "will",
+              "up",
+              "other",
+              "about",
+              "out",
+              "many",
+              "then",
+              "them",
+              "these",
+              "so",
+              "some",
+              "her",
+              "would",
+              "make",
+              "like",
+              "him",
+              "into",
+              "time",
+              "has",
+              "look",
+              "two",
+              "more",
+              "write",
+              "go",
+              "see",
+              "number",
+              "no",
+              "way",
+              "could",
+              "people",
+              "my",
+              "than",
+              "first",
+              "water",
+              "been",
+              "call",
+              "who",
+              "oil",
+              "its",
+              "now",
+              "find",
+              "long",
+              "down",
+              "day",
+              "did",
+              "get",
+              "come",
+              "made",
+              "may",
+              "part",
             ];
+
+            /*
+                  this.words = [
+                    [
+                      "thing",
+                      "last",
+                      "family",
+                      "star",
+                      "science",
+                      "speech",
+                      "busy",
+                      "year",
+                      "string",
+                    ],
+                    [
+                      "door",
+                      "century",
+                      "went",
+                      "present",
+                      "instrument",
+                      "early",
+                      "rope",
+                      "friend",
+                    ],
+                    [
+                      "more",
+                      "make",
+                      "method",
+                      "long",
+                      "draw",
+                      "run",
+                      "path",
+                      "machine",
+                      "speech",
+                    ],
+                  ];
+                  */
+
+            this.words = new Array();
+            for (let i = 0; i < 3; i++) {
+              this.words.push(this.generateRowOfWords());
+            }
+
             this.testing = false;
-            this.secondsRemaining = 10;
+            this.secondsRemaining = 20;
             this.currentWordIndex = 0;
           }
 
           connect() {
             this.updateWordBox();
             this.updateClock();
+          }
+
+          generateRowOfWords() {
+            const row = new Array(8);
+            for (let i = 0; i <= 8; i++) {
+              row[i] = this.commonWords[Math.floor(Math.random() * 100)];
+            }
+            return row;
           }
 
           inputChanged() {
@@ -47,8 +188,14 @@
                 this.inputTarget.value[this.inputTarget.value.length - 1] ===
                 " "
               ) {
+                if (this.currentWordIndex === this.words[0].length - 1) {
+                  this.words.push(this.generateRowOfWords());
+                  this.words.shift();
+                  this.currentWordIndex = 0;
+                } else {
+                  this.currentWordIndex++;
+                }
                 this.inputTarget.value = "";
-                this.currentWordIndex++;
                 this.updateWordBox();
               }
             }
@@ -56,23 +203,37 @@
 
           updateWordBox() {
             this.wordBoxTarget.innerHTML = "";
-            this.words.forEach(function (word, index, currentWordIndex) {
-              if (index === this.currentWordIndex) {
-                const span = Object.assign(document.createElement("span"), {
-                  className: "text-yellow-300",
-                });
-                span.appendChild(document.createTextNode(word));
-                this.wordBoxTarget.appendChild(span);
-              } else {
-                const span = document.createElement("span");
-                span.appendChild(document.createTextNode(word));
-                this.wordBoxTarget.appendChild(span);
+            this.words.forEach(function (row, index) {
+              if (index > 1) {
+                return;
               }
+              const rowIndex = index;
+              const div = Object.assign(document.createElement("div"), {
+                className: "space-x-2",
+              });
+              this.wordBoxTarget.appendChild(div);
+              row.forEach(function (word, index) {
+                if (rowIndex === 0 && index === this.currentWordIndex) {
+                  const span = Object.assign(document.createElement("span"), {
+                    className: "text-yellow-300",
+                  });
+                  span.appendChild(document.createTextNode(word));
+                  div.appendChild(span);
+                } else {
+                  const span = document.createElement("span");
+                  span.appendChild(document.createTextNode(word));
+                  div.appendChild(span);
+                }
+              }, this);
             }, this);
           }
 
           updateClock() {
-            this.timeRemainingTarget.innerHTML = this.secondsRemaining;
+            const minutes = Math.floor(this.secondsRemaining / 60).toString();
+            const seconds = (this.secondsRemaining % 60)
+              .toString()
+              .padStart(2, "0");
+            this.timeRemainingTarget.innerHTML = minutes + ":" + seconds;
           }
 
           startTesting() {
@@ -110,7 +271,7 @@
             p-6
             w-full
             rounded-md
-            space-x-2
+            space-y-2
             text-3xl
             font-normal
           "
