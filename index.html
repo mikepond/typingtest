@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import {
+        Application,
+        Controller,
+      } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+      window.Stimulus = Application.start();
+
+      Stimulus.register(
+        "test",
+        class extends Controller {
+          static targets = ["wordBox", "input", "timeRemaining"];
+
+          initialize() {
+            console.log("initializing");
+            this.words = [
+              "thing",
+              "last",
+              "family",
+              "star",
+              "science",
+              "speech",
+              "busy",
+              "year",
+              "string",
+            ];
+            this.testing = false;
+            this.secondsRemaining = 10;
+            this.currentWordIndex = 0;
+          }
+
+          connect() {
+            this.updateWordBox();
+            this.updateClock();
+          }
+
+          inputChanged() {
+            if (!this.testing) {
+              this.startTesting();
+            } else {
+              if (
+                this.inputTarget.value[this.inputTarget.value.length - 1] ===
+                " "
+              ) {
+                this.inputTarget.value = "";
+                this.currentWordIndex++;
+                this.updateWordBox();
+              }
+            }
+          }
+
+          updateWordBox() {
+            this.wordBoxTarget.innerHTML = "";
+            this.words.forEach(function (word, index, currentWordIndex) {
+              if (index === this.currentWordIndex) {
+                const span = Object.assign(document.createElement("span"), {
+                  className: "text-yellow-300",
+                });
+                span.appendChild(document.createTextNode(word));
+                this.wordBoxTarget.appendChild(span);
+              } else {
+                const span = document.createElement("span");
+                span.appendChild(document.createTextNode(word));
+                this.wordBoxTarget.appendChild(span);
+              }
+            }, this);
+          }
+
+          updateClock() {
+            this.timeRemainingTarget.innerHTML = this.secondsRemaining;
+          }
+
+          startTesting() {
+            this.testing = true;
+            this.testTimer = setInterval(() => {
+              this.secondsRemaining--;
+              this.updateClock();
+              if (this.secondsRemaining == 0) {
+                this.stopTesting();
+              }
+            }, 1000);
+          }
+
+          stopTesting() {
+            if (this.testTimer) {
+              clearInterval(this.testTimer);
+            }
+            this.testing = false;
+            this.inputTarget.disabled = true;
+          }
+        }
+      );
+    </script>
+  </head>
+  <body>
+    <div
+      data-controller="test"
+      class="min-h-screen pt-16 bg-slate-800 text-white"
+    >
+      <main class="max-w-4xl mx-auto flex flex-col space-y-6 items-center">
+        <div
+          data-test-target="wordBox"
+          class="
+            bg-slate-700
+            p-6
+            w-full
+            rounded-md
+            space-x-2
+            text-3xl
+            font-normal
+          "
+        ></div>
+        <div class="flex space-x-4">
+          <input
+            type="text"
+            class="
+              bg-slate-700
+              p-4
+              max-w-xl
+              rounded-md
+              focus:outline-none
+              focus:ring-2 focus:ring-teal-300
+              text-3xl
+              font-normal
+            "
+            autofocus="autofocus"
+            data-action="test#inputChanged"
+            data-test-target="input"
+          />
+          <div
+            data-test-target="timeRemaining"
+            class="bg-slate-700 py-4 px-8 rounded-md text-3xl font-light"
+          ></div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
