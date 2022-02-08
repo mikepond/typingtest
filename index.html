@@ -14,9 +14,16 @@
       Stimulus.register(
         "test",
         class extends Controller {
-          static targets = ["wordBox", "input", "timeRemaining"];
+          static targets = [
+            "wordBox",
+            "input",
+            "timeRemaining",
+            "correctCharacters",
+            "rawWpm",
+          ];
 
           initialize() {
+            this.correctCharacters = 0;
             this.commonWords = [
               "the",
               "of",
@@ -126,8 +133,10 @@
             }
 
             this.testing = false;
-            this.secondsRemaining = 20;
+            this.testDuration = 10;
+            this.secondsRemaining = this.testDuration;
             this.currentWordIndex = 0;
+            this.currentCharacterIndex = 0;
           }
 
           connect() {
@@ -161,6 +170,7 @@
                 this.inputTarget.value = "";
                 this.updateWordBox();
               }
+              this.correctCharacters++;
             }
           }
 
@@ -215,7 +225,16 @@
               clearInterval(this.testTimer);
             }
             this.testing = false;
+            this.inputTarget.value = "";
             this.inputTarget.disabled = true;
+            this.correctCharactersTarget.innerHTML =
+              this.correctCharacters.toString();
+            this.rawWpmTarget.innerHTML =
+              "Raw WPM: " +
+              Math.floor(
+                this.correctCharacters / 5 / (this.testDuration / 60)
+              ).toString();
+            this.rawWpmTarget.classList.remove("invisible");
           }
         }
       );
@@ -260,6 +279,23 @@
             data-test-target="timeRemaining"
             class="bg-slate-700 py-4 px-8 rounded-md text-3xl font-light"
           ></div>
+        </div>
+        <div
+          class="
+            w-full
+            mx-auto
+            mt-8
+            space-y-4
+            border border-gray-700
+            rounded-md
+            p-6
+          "
+        >
+          <div class="invisible" data-test-target="rawWpm"></div>
+          <div>
+            Correct characters:
+            <span data-test-target="correctCharacters"></span>
+          </div>
         </div>
       </main>
     </div>
